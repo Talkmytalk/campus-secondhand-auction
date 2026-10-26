@@ -1,5 +1,8 @@
 # 校园二手拍卖系统——小组课程项目
 
+项目仓库：[Talkmytalk/campus-secondhand-auction](https://github.com/Talkmytalk/campus-secondhand-auction)  
+检查工作记录：[提交历史](https://github.com/Talkmytalk/campus-secondhand-auction/commits/main/) · [Pull Requests](https://github.com/Talkmytalk/campus-secondhand-auction/pulls) · [问题记录](https://github.com/Talkmytalk/campus-secondhand-auction/issues)
+
 三人小组共同开发校园二手拍卖系统，分工为后端、前端和测试。当前已整理入本地项目的主要成果为后端第一版：用户名密码注册登录、发布拍卖、查看列表与详情、出价校验、到期结算、本人订单和获胜者模拟付款。前端页面及测试成员的独立成果等待本人提交与确认。
 
 第一版范围不含图片上传、真实支付、校园账号认证和收货流程。

@@ -1,6 +1,18 @@
 # GitHub 协作与成果检查说明
 
-编制日期：2026 年 10 月 26 日。组长确认使用 GitHub 账号 `Talkmytalk`，仓库名为 `campus-secondhand-auction`，公开范围为 Public。目标地址为 `https://github.com/Talkmytalk/campus-secondhand-auction`；是否已创建和推送，以实际 GitHub 连接和上传结果为准。
+编制日期：2026 年 10 月 26 日。已使用 GitHub 账号 `Talkmytalk` 创建公开仓库，并完成首次推送。
+
+- 项目地址：[Talkmytalk/campus-secondhand-auction](https://github.com/Talkmytalk/campus-secondhand-auction)
+- 提交记录：[main 分支提交历史](https://github.com/Talkmytalk/campus-secondhand-auction/commits/main/)
+- 初始提交：`63f966d`，导入当前已有的后端、验证记录与小组文档。
+
+组员可以在自己电脑获取仓库：
+
+```text
+git clone https://github.com/Talkmytalk/campus-secondhand-auction.git
+```
+
+需要向本仓库推送的成员，应先由组长确认 GitHub 用户名并设置协作权限；老师查看公开内容可直接使用项目链接。
 
 ## 一、仓库用于展示什么
 

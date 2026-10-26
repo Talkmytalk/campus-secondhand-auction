@@ -1,0 +1,20 @@
+backend/target/
+backend/data/
+.maven-cache/
+*.log
+.idea/
+*.iml
+.vscode/
+# 交付包、运行程序及其解压副本在本机保留，源码以 backend/ 为准。
+交付材料/
+
+# 本机运行数据与账号配置。
+/data/
+*.mv.db
+*.trace.db
+.env
+.env.*
+!.env.example
+.tools/
+**/node_modules/
+frontend/dist/

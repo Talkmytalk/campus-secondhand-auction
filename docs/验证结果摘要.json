@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-19",
+  "automaticTests": [
+    {
+      "name": "edu.campus.auction.AuctionFlowTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.campus.auction.domain.BidRulesTest",
+      "tests": "15",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.campus.auction.HealthEndpointTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "packagedChecks": [
+    "register_login_over_http",
+    "publish_valid_bid_and_reject_invalid_bids",
+    "automatic_end_winner_and_reject_late_bid",
+    "winner_only_simulated_payment_and_repeat_request",
+    "file_database_and_session_survive_process_restart"
+  ],
+  "packagedChecksPassed": true
+}

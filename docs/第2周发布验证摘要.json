@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-02",
+  "buildCommand": "mvn verify",
+  "freshBuild": true,
+  "sourceMatchesWorkingTree": true,
+  "automaticTests": [
+    {
+      "name": "edu.campus.auction.AuctionFlowTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.campus.auction.domain.BidRulesTest",
+      "tests": "15",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "edu.campus.auction.HealthEndpointTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "total": 35,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "httpChecksPassed": true,
+  "httpChecks": [
+    "旧版文件数据库升级，旧拍卖及登录令牌继续可用",
+    "真实HTTP multipart上传、公开读取及PNG解码",
+    "真实HTTP未登录、伪装文件及超5MB请求返回结构化错误",
+    "进程重启后图片字节、拍卖图片地址及登录状态保留"
+  ],
+  "jarSha256": "a7bc3b55ecce1b4979d21eb50579fc5fe1e102c57d0d36841f989b26d1ebfefb",
+  "scope": "后端验证；图片页面接入与组员独立人工测试待完成。"
+}

@@ -29,12 +29,14 @@ public final class ApiModels {
     public record LoginView(String token, String tokenType, Instant expiresAt, UserView user) {}
     public record AuctionView(Long id, Long sellerId, String title, String description,
             BigDecimal startingPrice, BigDecimal minimumIncrement, BigDecimal currentHighestPrice,
-            BigDecimal nextMinimumPrice, Long highestBidderId, String status, Instant createdAt, Instant endsAt) {
+            BigDecimal nextMinimumPrice, Long highestBidderId, String status, Instant createdAt, Instant endsAt,
+            String imageUrl) {
         public static AuctionView of(Auction a) {
             return new AuctionView(a.id, a.sellerId, a.title, a.description, a.startingPrice,
                     a.minimumIncrement, a.currentHighestPrice,
                     a.status == edu.campus.auction.domain.AuctionSnapshot.Status.RUNNING ? a.snapshot().nextMinimumPrice() : null,
-                    a.highestBidderId, a.status.name(), a.createdAt, a.endsAt);
+                    a.highestBidderId, a.status.name(), a.createdAt, a.endsAt,
+                    Boolean.TRUE.equals(a.hasImage) ? "/api/auctions/" + a.id + "/image" : null);
         }
     }
     public record BidView(Long id, Long auctionId, Long bidderId, BigDecimal amount, Instant createdAt) {

@@ -47,6 +47,23 @@ public class ApiErrorHandler {
         return error(409, "DATA_CONFLICT", "数据重复或冲突，请检查用户名或刷新后重试");
     }
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorView> uploadTooLarge(Exception e) {
+        return error(413, "IMAGE_TOO_LARGE", "图片不能超过5MB，请压缩后重试");
+    }
+
+    @ExceptionHandler({org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+            org.springframework.web.multipart.MultipartException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class})
+    public ResponseEntity<ErrorView> invalidUpload(Exception e) {
+        return error(400, "IMAGE_INVALID", "请用multipart/form-data提交file图片字段");
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorView> unsupportedMedia(Exception e) {
+        return error(415, "UNSUPPORTED_MEDIA_TYPE", "上传图片请使用multipart/form-data");
+    }
+
     @ExceptionHandler(PessimisticLockingFailureException.class)
     public ResponseEntity<ErrorView> busy(Exception e) {
         return error(409, "BUSY_RETRY", "当前操作较多，请刷新后重试");

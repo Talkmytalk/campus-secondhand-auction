@@ -54,13 +54,14 @@ class AuctionFlowTest {
     @Autowired AuctionRepository auctions;
     @Autowired BidRepository bids;
     @Autowired OrderRepository orders;
+    @Autowired AuctionImageRepository images;
     @Autowired SettlementScheduler scheduler;
     Account seller, buyer, other;
     record Account(long id, String token) {}
 
     @BeforeEach
     void prepare() throws Exception {
-        orders.deleteAll(); bids.deleteAll(); auctions.deleteAll(); sessions.deleteAll(); users.deleteAll();
+        images.deleteAll(); orders.deleteAll(); bids.deleteAll(); auctions.deleteAll(); sessions.deleteAll(); users.deleteAll();
         clock.set(Instant.parse("2026-10-19T10:00:00Z"));
         seller = account("seller"); buyer = account("buyer"); other = account("other");
     }
@@ -273,6 +274,95 @@ class AuctionFlowTest {
             assertEquals(1, orders.count());
             assertEquals(AuctionOrder.Status.PAID, orders.findById(order).orElseThrow().status);
         } finally { pool.shutdownNow(); }
+    }
+
+    byte[] picture(String format, int width, int height) throws Exception {
+        var image = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        image.setRGB(0, 0, 0x00ff00);
+        var out = new java.io.ByteArrayOutputStream();
+        assertTrue(javax.imageio.ImageIO.write(image, format, out));
+        return out.toByteArray();
+    }
+
+    JsonNode upload(long id, String token, String name, byte[] bytes, int expected) throws Exception {
+        var request = multipart("/api/auctions/" + id + "/image")
+                .file(new org.springframework.mock.web.MockMultipartFile("file", name, "image/png", bytes));
+        if (token != null) request.header("Authorization", "Bearer " + token);
+        var response = mvc.perform(request).andReturn().getResponse();
+        assertEquals(expected, response.getStatus(), response.getContentAsString());
+        return json.readTree(response.getContentAsString());
+    }
+
+    @Test
+    void pngUploadIsPublicAndMetadataIsVisibleInListAndDetail() throws Exception {
+        long id = create();
+        assertTrue(call("GET", "/api/auctions/" + id, null, null, 200).get("imageUrl").isNull());
+        upload(id, seller.token, "台灯.png", picture("PNG", 3, 2), 200);
+        String url = "/api/auctions/" + id + "/image";
+        assertEquals(url, call("GET", "/api/auctions/" + id, null, null, 200).get("imageUrl").asText());
+        assertEquals(url, call("GET", "/api/auctions", null, null, 200).get("items").get(0).get("imageUrl").asText());
+        var response = mvc.perform(get(url)).andReturn().getResponse();
+        assertEquals(200, response.getStatus());
+        assertTrue(org.springframework.http.MediaType.IMAGE_PNG.isCompatibleWith(org.springframework.http.MediaType.parseMediaType(response.getContentType())));
+        assertEquals("nosniff", response.getHeader("X-Content-Type-Options"));
+        assertEquals(3, javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(response.getContentAsByteArray())).getWidth());
+    }
+
+    @Test
+    void jpegIsConvertedAndReplacementKeepsOneImage() throws Exception {
+        long id = create();
+        upload(id, seller.token, "photo.JPG", picture("JPEG", 4, 3), 200);
+        upload(id, seller.token, "replacement.png", picture("PNG", 5, 2), 200);
+        assertEquals(1, images.count());
+        var decoded = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(images.findById(id).orElseThrow().png));
+        assertEquals(5, decoded.getWidth());
+    }
+
+    @Test
+    void uploadRequiresSellerAndExistingAuction() throws Exception {
+        long id = create(); byte[] png = picture("PNG", 1, 1);
+        upload(id, null, "x.png", png, 401);
+        upload(id, "forged", "x.png", png, 401);
+        upload(id, buyer.token, "x.png", png, 403);
+        upload(Long.MAX_VALUE, seller.token, "x.png", png, 404);
+        call("GET", "/api/auctions/" + id + "/image", null, null, 404);
+        assertEquals(0, images.count());
+    }
+
+    @Test
+    void imageCannotChangeAfterBidOrAtExactDeadline() throws Exception {
+        long id = create(); byte[] png = picture("PNG", 1, 1);
+        upload(id, seller.token, "x.png", png, 200);
+        byte[] original = images.findById(id).orElseThrow().png;
+        bid(id, buyer, "20", 201);
+        assertEquals("IMAGE_LOCKED", upload(id, seller.token, "x.png", picture("PNG", 2, 2), 409).get("code").asText());
+        assertArrayEquals(original, images.findById(id).orElseThrow().png);
+        long expired = create(); clock.advance(60);
+        upload(expired, seller.token, "x.png", png, 409);
+        call("GET", "/api/auctions/" + id, null, null, 200);
+        upload(id, seller.token, "x.png", png, 409);
+    }
+
+    @Test
+    void emptyDisguisedUnsupportedAndOversizedImagesAreRejectedWithoutChanges() throws Exception {
+        long id = create();
+        upload(id, seller.token, "x.png", new byte[0], 400);
+        upload(id, seller.token, "x.png", "<script>alert(1)</script>".getBytes(), 400);
+        upload(id, seller.token, "x.txt", picture("PNG", 1, 1), 400);
+        upload(id, seller.token, "x.png", picture("GIF", 1, 1), 400);
+        upload(id, seller.token, "x.png", new byte[5 * 1024 * 1024 + 1], 413);
+        upload(id, seller.token, "x.png", picture("PNG", 4097, 1), 400);
+        assertEquals(0, images.count());
+        assertFalse(Boolean.TRUE.equals(auctions.findById(id).orElseThrow().hasImage));
+    }
+
+    @Test
+    void missingFileReturnsStructuredErrorAndLegacyNullFlagRemainsCompatible() throws Exception {
+        long id = create(); var row = auctions.findById(id).orElseThrow(); row.hasImage = null; auctions.saveAndFlush(row);
+        assertTrue(call("GET", "/api/auctions/" + id, null, null, 200).get("imageUrl").isNull());
+        var response = mvc.perform(multipart("/api/auctions/" + id + "/image").header("Authorization", "Bearer " + seller.token)).andReturn().getResponse();
+        assertEquals(400, response.getStatus());
+        assertEquals("IMAGE_INVALID", json.readTree(response.getContentAsString()).get("code").asText());
     }
 
     @Test

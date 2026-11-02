@@ -29,6 +29,8 @@ public class Auction {
     public Instant endsAt;
     @Enumerated(EnumType.STRING) @Column(nullable = false)
     public AuctionSnapshot.Status status;
+    // Nullable for databases created by the first release; null means no image.
+    public Boolean hasImage = false;
 
     public AuctionSnapshot snapshot() {
         return new AuctionSnapshot(sellerId, startingPrice, minimumIncrement,
